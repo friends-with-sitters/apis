@@ -165,7 +165,7 @@ Resources:
                 - Name: BuildOutput
               Configuration:
                 ActionMode: CREATE_UPDATE
-                Capabilities: "CAPABILITY_IAM, CAPABILITY_AUTO_EXPAND"
+                Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND
                 RoleArn: !ImportValue CloudFormationExecutionRole
                 StackName: !Sub "${AWS::StackName}-service-locations"
                 TemplatePath: BuildOutput::locations.yml
