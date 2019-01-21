@@ -26,6 +26,8 @@ Mappings:
   RegionNamesToIDs:
     NorthVirginia:
       Region: us-east-1
+    London:
+      Region: eu-west-2
 
 Resources:
 
@@ -99,6 +101,40 @@ Resources:
                     "Repository": "${Repository}",
                     "Branch": "${Branch}"
                   }
+        - Name: Deploy
+          Actions:
+            - Name: Service@London
+              RunOrder: 1
+              Region: !Ref AWS::Region
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: 1
+              InputArtifacts:
+                - Name: GitHubOutput
+              Configuration:
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_IAM
+                RoleArn: !ImportValue CloudFormationExecutionRole
+                StackName: !Sub "${AWS::StackName}-service"
+                TemplatePath: GitHubOutput::.ci/service.yml
+            - Name: Service@N.Virginia
+              RunOrder: 1
+              Region: !FindInMap [ RegionNamesToIDs, NorthVirginia, Region ]
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: 1
+              InputArtifacts:
+                - Name: GitHubOutput
+              Configuration:
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_IAM
+                RoleArn: !ImportValue CloudFormationExecutionRole
+                StackName: !Sub "${AWS::StackName}-service"
+                TemplatePath: GitHubOutput::.ci/service.yml
 
   PipelineTrigger:
     Type: AWS::CodePipeline::Webhook
