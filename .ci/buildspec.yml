@@ -33,6 +33,6 @@ phases:
 
 artifacts:
   type: zip
-  discard-paths: no
+  discard-paths: yes
   files:
     - out/**/*
