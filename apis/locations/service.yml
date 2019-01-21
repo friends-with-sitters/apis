@@ -1,0 +1,136 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Transform: AWS::Serverless-2016-10-31
+
+Description: "Service Deployment"
+
+Parameters:
+
+  StageName:
+    Type: String
+    Default: default
+    Description: |
+      The name of the stage launched inside this API.
+
+  UserPoolArn:
+    Type: String
+    Description: |
+      The User Pool ARN to connect an authorizer to for this API.
+
+  EnabledOrigin:
+    Type: String
+    Default: "'*'"
+    Description: |
+      The CORS Allowed Origins for API endpoints. Defaults to all.
+
+  TracingPreference:
+    Type: String
+    Default: PassThrough
+    Description: |
+      Determines if AWS X-Ray tracing is enabled for the deployed Lambda functions
+    AllowedValues:
+      - PassThrough
+      - Active
+
+  LoggingPreference:
+    Type: String
+    Default: OFF
+    Description: |
+      Configures API Gateway logging, method & tracing resource settings
+
+  LocationsTable:
+    Type: String
+    Default: todo-remove-me
+    Description: |
+      The DynamoDB table where User Locations are stored.
+
+  GoogleMapsApiEndpoint:
+    Type: String
+    Default: temp.com
+    NoEcho: true
+
+  GoogleMapsApiKey:
+    Type: String
+    Default: aiodjawidjaiodjaoidjai
+    NoEcho: true
+
+Conditions:
+
+  UseLogging: !Not [ !Equals [ !Ref LoggingPreference, "OFF" ] ]
+
+Resources:
+
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Ref AWS::StackName
+      StageName: !Ref StageName
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./bundled.json
+      Cors:
+        AllowOrigin: !Ref EnabledOrigin
+        MaxAge: "'3600'"
+      Variables:
+        GoogleMapsApiEndpoint: !Ref GoogleMapsApiEndpoint
+        GoogleMapsApiKey: !Ref GoogleMapsApiKey
+        LocationsTable: !Ref LocationsTable
+      MethodSettings:
+        - ResourcePath: '/*'
+          HttpMethod: '*'
+          LoggingLevel: !Ref LoggingPreference
+          MetricsEnabled: false
+          DataTraceEnabled: false
+
+  ApiLogGroup:
+    Condition: UseLogging
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "API-Gateway-Execution-Logs_${Api}/${StageName}"
+      RetentionInDays: 1
+
+  ApiExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: "/"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: !Sub "apigateway.${AWS::URLSuffix}"
+            Action: sts:AssumeRole
+
+  ApiExecutionPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: APIPermissions
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "dynamodb:PutItem"
+              - "dynamodb:UpdateItem"
+              - "dynamodb:DeleteItem"
+              - "dynamodb:Query"
+            Resource:
+              - !Sub "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${LocationsTable}"
+      Roles:
+        - !Ref ApiExecutionRole
+
+Outputs:
+
+  URL:
+    Description: URL for the service
+    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${StageName}"
+
+  Api:
+    Description: API Gateway ID
+    Value: !Ref Api
+
+  Stage:
+    Description: API Gateway Stage Name
+    Value: !Ref StageName

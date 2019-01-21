@@ -1,0 +1,16 @@
+type: object
+description: |
+  A place, containing a name and ID
+required:
+  - name
+  - id
+properties:
+  id:
+    type: string
+    description: The ID of the place
+  name:
+    type: string
+    description: The human readable representation of the place.
+  poi:
+    type: string
+    description: A point of interest for the place.

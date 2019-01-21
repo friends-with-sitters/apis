@@ -1,0 +1,89 @@
+description: |
+  Stores a preset location. A location is a valid retrievable place.
+tags:
+  - Locations
+  - Private
+operationId: createStoredLocation
+security:
+  - UserToken: []
+x-amazon-apigateway-request-validator: body-only
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - name: place
+    in: body
+    description: |
+      The request body consists of a valid place.
+    required: true
+    schema:
+      $ref: "../../definitions.yml#/Place"
+responses:
+  "201":
+    description: 201 response
+    schema:
+      $ref: "../../definitions.yml#/Empty"
+    headers:
+      Access-Control-Allow-Headers:
+        type: string
+        description: CORS Header
+      Access-Control-Allow-Origin:
+        type: string
+        description: CORS Header
+      Content-Security-Policy:
+        type: string
+        description: |
+          Content Security Policy (CSP) is an HTTP header that allows site
+          operators fine-grained control over where resources on their
+          site can be loaded from.
+      Strict-Transport-Security:
+        type: string
+        description: |
+          HTTP Strict Transport Security (HSTS) is an HTTP header
+          that notifies user agents to only connect to a given site
+          over HTTPS, even if the scheme chosen was HTTP.
+      X-Content-Type-Options:
+        type: string
+        description: |
+          A header supported by Internet Explorer, Chrome and Firefox 50+
+          that tells it not to load scripts and stylesheets unless
+          the server indicates the correct MIME type.
+x-amazon-apigateway-integration:
+  type: aws
+  httpMethod: POST
+  credentials:
+    Fn::GetAtt: ApiExecutionRole.Arn
+  uri:
+    Fn::Sub: "arn:aws:apigateway:${AWS::Region}:dynamodb:action/PutItem"
+  requestTemplates:
+    $ref: "./request.yml"
+  responses:
+    default:
+      statusCode: "201"
+      responseTemplates:
+        $ref: ./response.yml
+      responseParameters:
+        method.response.header.Access-Control-Allow-Headers: "'*'"
+        method.response.header.Access-Control-Allow-Origin: "'*'"
+        method.response.header.Content-Security-Policy: "'default-src 'none'; frame-ancestors 'none''"
+        method.response.header.Strict-Transport-Security: "'max-age=31536000'"
+        method.response.header.X-Content-Type-Options: "'nosniff'"
+    4\d{2}:
+      statusCode: "400"
+      responseTemplates:
+        application/json: |
+          {
+            "type": "BadRequest",
+            "message": "Your request could not be processed.",
+            "__raw": $input.body
+          }
+    5\d{2}:
+      statusCode: "500"
+      responseTemplates:
+        application/json: |
+          {
+            "type": "InternalServerError",
+            "message": "There was an internal error",
+            "__raw": $input.body
+          }

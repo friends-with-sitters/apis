@@ -1,0 +1,12 @@
+application/json: |
+  #set ($predictions = $input.path('$.predictions'))
+  [
+    #foreach($prediction in $predictions)
+    #set ($id = $prediction.place_id)
+    #set ($name = $prediction.description)
+    {
+      "id": "$id",
+      "name": "$name"
+    }#if($foreach.hasNext),#end
+    #end
+  ]

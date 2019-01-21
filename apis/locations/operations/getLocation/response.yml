@@ -1,0 +1,26 @@
+application/json: |
+  #set ($result = $input.path('$.result'))
+  #set ($components = $result.address_components)
+  {
+    "poi": "$result.formatted_address",
+    #foreach($component in $components)
+      #set ($type = $component.types.get(0))
+      #if ($type == "street_number" || $type == "premise")
+      "street_number": "$component.long_name",
+      #elseif ($type == "route")
+      "street_address": "$component.long_name",
+      #elseif ($type == "postal_town")
+      "locality": "$component.long_name",
+      #elseif ($type == "administrative_area_level_2")
+      "region": "$component.long_name",
+      #elseif ($type == "country")
+      "country": "$component.long_name",
+      #elseif ($type == "postal_code")
+      "postal_code": "$component.long_name",
+      #end
+    #end
+    "position": {
+      "latitude": $result.geometry.location.lat,
+      "longitude": $result.geometry.location.lng
+    }
+  }

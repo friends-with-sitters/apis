@@ -1,0 +1,18 @@
+type: object
+description: |
+  A latitude and longitude position, preferably to the precision of 4 places.
+required:
+  - latitude
+  - longitude
+properties:
+  latitude:
+    type: number
+    # format: double
+  longitude:
+    type: number
+    # format: double
+  accuracy:
+    type: number
+    # format: double
+    default: 1
+    description: The accuracy of the latitude and longitude supplied.

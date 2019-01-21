@@ -1,0 +1,26 @@
+application/json: |
+  #set ($table_name = $stageVariables.LocationsTable)
+  #set ($sub = $context.authorizer.claims.sub)
+  #set ($id = $input.path('$.id'))
+  #set ($name = $input.path('$.name'))
+  #set ($poi = $input.path('$.poi'))
+  {
+    "TableName": "$table_name",
+    "ReturnConsumedCapacity": "NONE",
+    "ReturnItemCollectionMetrics": "NONE",
+    "ReturnValues": "NONE",
+    "Item": {
+      "sub": {
+        "S": "$sub"
+      },
+      "id": {
+        "S": "$id"
+      },
+      "name": {
+        "S": "$util.escapeJavaScript($name).replaceAll("\\'","'")"
+      },
+      "poi": {
+        "S": "$util.escapeJavaScript($poi).replaceAll("\\'","'")"
+      }
+    }
+  }

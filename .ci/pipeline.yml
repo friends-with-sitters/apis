@@ -135,6 +135,40 @@ Resources:
                 RoleArn: !ImportValue CloudFormationExecutionRole
                 StackName: !Sub "${AWS::StackName}-service"
                 TemplatePath: GitHubOutput::.ci/service.yml
+        - Name: Build
+          Actions:
+            - Name: Build
+              RunOrder: 1
+              InputArtifacts:
+                - Name: GitHubOutput
+              OutputArtifacts:
+                - Name: BuildOutput
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref Build
+                PrimarySource: SourceOutput
+        - Name: Services
+          Actions:
+            - Name: Locations
+              RunOrder: 1
+              Region: !Ref AWS::Region
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: 1
+              InputArtifacts:
+                - Name: BuildOutput
+              Configuration:
+                ActionMode: CREATE_UPDATE
+                Capabilities: "CAPABILITY_IAM, CAPABILITY_AUTO_EXPAND"
+                RoleArn: !ImportValue CloudFormationExecutionRole
+                StackName: !Sub "${AWS::StackName}-service-locations"
+                TemplatePath: GitHubOutput::out/locations.yml
 
   PipelineTrigger:
     Type: AWS::CodePipeline::Webhook
@@ -149,6 +183,28 @@ Resources:
       TargetPipelineVersion: !GetAtt Pipeline.Version
       TargetAction: GitHub
       RegisterWithThirdParty: true
+
+  Build:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      EncryptionKey: !ImportValue Key
+      ServiceRole: !ImportValue CodeBuildExecutionRole
+      Source:
+        BuildSpec: .ci/buildspec.yml
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/nodejs:8.11.0
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: S3_BUCKET
+            Type: PLAINTEXT
+            Value: !ImportValue Artifacts
+          - Name: KMS_KEY
+            Type: PLAINTEXT
+            Value: !ImportValue Key
+      Artifacts:
+        Type: CODEPIPELINE
 
 Outputs:
 

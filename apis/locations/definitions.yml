@@ -1,0 +1,26 @@
+Address:
+  $ref: ../../common/definitions/address.yml
+
+Addresses:
+  $ref: ../../common/definitions/addresses.yml
+
+Empty:
+  $ref: ../../common/definitions/empty.yml
+
+Error:
+  $ref: ../../common/definitions/error.yml
+
+Location:
+  $ref: ../../common/definitions/location.yml
+
+Locations:
+  $ref: ../../common/definitions/locations.yml
+
+Place:
+  $ref: ../../common/definitions/place.yml
+
+Places:
+  $ref: ../../common/definitions/places.yml
+
+Position:
+  $ref: ../../common/definitions/position.yml

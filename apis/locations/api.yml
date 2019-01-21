@@ -1,0 +1,38 @@
+swagger: "2.0"
+info:
+  title: locations
+  version: 0.0.1
+  description: |
+    Locations API providing address lookup, retrieval and storage for users.
+schemes:
+  - https
+x-amazon-apigateway-request-validators:
+  $ref: ../../common/validators.yml
+x-amazon-apigateway-gateway-responses:
+  $ref: ../../common/gateway/responses.yml
+definitions:
+  $ref: ./definitions.yml
+securityDefinitions:
+  UserToken:
+    type: apiKey
+    name: Authorization
+    in: header
+    x-amazon-apigateway-authtype: cognito_user_pools
+    x-amazon-apigateway-authorizer:
+      providerARNs:
+        - Ref: UserPoolArn
+      type: cognito_user_pools
+paths:
+  /search:
+    get:
+      $ref: ./operations/searchLocation/integration.yml
+  /details:
+    get:
+      $ref: ./operations/getLocation/integration.yml
+  /stored:
+    get:
+      $ref: ./operations/getStoredLocations/integration.yml
+    post:
+      $ref: ./operations/createStoredLocation/integration.yml
+    delete:
+      $ref: ./operations/deleteStoredLocation/integration.yml

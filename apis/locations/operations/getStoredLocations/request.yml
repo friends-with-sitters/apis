@@ -1,0 +1,19 @@
+application/json: |
+  #set ($table_name = $stageVariables.LocationsTable)
+  #set ($sub = $context.authorizer.claims.sub)
+  {
+    "TableName": "$table_name",
+    "KeyConditionExpression": "#sub = :sub AND #id >= :id",
+    "ExpressionAttributeValues": {
+      ":sub": {
+        "S": "$sub"
+      },
+      ":id": {
+        "S": "0"
+      }
+    },
+    "ExpressionAttributeNames": {
+      "#sub": "sub",
+      "#id": "id"
+    }
+  }

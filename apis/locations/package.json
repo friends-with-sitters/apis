@@ -1,0 +1,10 @@
+{
+  "name": "locations",
+  "version": "0.0.0",
+  "main": "index.js",
+  "scripts": {
+    "bundle": "npx swagger-cli bundle api.yml --outfile bundled.json",
+    "package": "aws cloudformation package $@ --template-file service.yml --output-template-file packaged.yml"
+  },
+  "license": "MIT"
+}

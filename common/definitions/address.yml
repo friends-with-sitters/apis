@@ -1,0 +1,16 @@
+description: |
+  Represents an addressable location. An address has a street number and address.
+allOf:
+  - $ref: ./location.yml
+  - required:
+      - street_number
+      - street_address
+    properties:
+      street_number:
+        type: string
+        description: |
+          Street number component corresponding to the address
+      street_address:
+        type: string
+        description: |
+          Full street address component

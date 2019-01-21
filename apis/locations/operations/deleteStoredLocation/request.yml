@@ -1,0 +1,18 @@
+application/json: |
+  #set ($table_name = $stageVariables.LocationsTable)
+  #set ($sub = $context.authorizer.claims.sub)
+  #set ($id = $input.path('$.id'))
+  {
+    "TableName": "$table_name",
+    "ReturnConsumedCapacity": "NONE",
+    "ReturnItemCollectionMetrics": "NONE",
+    "ReturnValues": "NONE",
+    "Key": {
+      "sub": {
+        "S": "$sub"
+      },
+      "id": {
+        "S": "$id"
+      }
+    }
+  }

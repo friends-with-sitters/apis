@@ -1,0 +1,123 @@
+description: |
+  Once you have a id from a autocomplete search, you can request more details
+  about a particular establishment or point of interest by initiating a Place
+  Details request. A Place Details request returns more comprehensive
+  information about the indicated place such as its complete address,
+tags:
+  - Locations
+  - Private
+operationId: getLocation
+security:
+  - UserToken: []
+x-amazon-apigateway-request-validator: params-only
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - name: id
+    in: query
+    description: |
+      The id of the place to retrieve details for
+    required: true
+    type: string
+  - name: language
+    in: query
+    pattern: '[a-z]{2}'
+    description: |
+      The language code, indicating in which language the results should be
+      returned, if possible. Note that some fields may not be
+      available in the requested language.
+    type: string
+responses:
+  "200":
+    description: 200 response
+    schema:
+      $ref: "../../definitions.yml#/Address"
+    headers:
+      Access-Control-Allow-Headers:
+        type: string
+        description: CORS Header
+      Access-Control-Allow-Origin:
+        type: string
+        description: CORS Header
+      Content-Security-Policy:
+        type: string
+        description: |
+          Content Security Policy (CSP) is an HTTP header that allows site
+          operators fine-grained control over where resources on their
+          site can be loaded from.
+      Strict-Transport-Security:
+        type: string
+        description: |
+          HTTP Strict Transport Security (HSTS) is an HTTP header
+          that notifies user agents to only connect to a given site
+          over HTTPS, even if the scheme chosen was HTTP.
+      X-Content-Type-Options:
+        type: string
+        description: |
+          A header supported by Internet Explorer, Chrome and Firefox 50+
+          that tells it not to load scripts and stylesheets unless
+          the server indicates the correct MIME type.
+      X-Status:
+        type: string
+        description: |
+          Describes the status of the requested place. If no data is returned
+          for a place, this header may provide an indication as to why.
+        enum:
+          - OK
+          - UNKNOWN_ERROR
+          - ZERO_RESULTS
+          - OVER_QUERY_LIMIT
+          - REQUEST_DENIED
+          - INVALID_REQUEST
+          - NOT_FOUND
+    examples:
+      application/json: |
+        {
+          "poi": "Londonderry, UK",
+          "locality": "Londonderry",
+          "region": "Derry",
+          "country": "United Kingdom",
+          "position": {
+            "latitude": 54.9966124,
+            "longitude": -7.308574800000001
+          }
+        }
+x-amazon-apigateway-integration:
+  type: http
+  httpMethod: GET
+  uri: https://${stageVariables.GoogleMapsApiEndpoint}/maps/api/place/details/json
+  requestParameters:
+    integration.request.querystring.key: stageVariables.GoogleMapsApiKey
+    integration.request.querystring.placeid: method.request.querystring.id
+    integration.request.querystring.language: method.request.querystring.language
+  responses:
+    default:
+      statusCode: "200"
+      responseTemplates:
+        $ref: ./response.yml
+      responseParameters:
+        method.response.header.Access-Control-Allow-Headers: "'*'"
+        method.response.header.Access-Control-Allow-Origin: "'*'"
+        method.response.header.Content-Security-Policy: "'default-src 'none'; frame-ancestors 'none''"
+        method.response.header.Strict-Transport-Security: "'max-age=31536000'"
+        method.response.header.X-Status: integration.response.body.status
+    4\d{2}:
+      statusCode: "400"
+      responseTemplates:
+        application/json: |
+          {
+            "type": "BadRequest",
+            "message": "Your request could not be processed.",
+            "__raw": $input.body
+          }
+    5\d{2}:
+      statusCode: "500"
+      responseTemplates:
+        application/json: |
+          {
+            "type": "InternalServerError",
+            "message": "There was an internal error",
+            "__raw": $input.body
+          }

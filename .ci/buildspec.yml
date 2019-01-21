@@ -1,0 +1,38 @@
+version: 0.2
+
+cache:
+  paths:
+    - 'apis/*/node_modules/**/*'
+    - 'apis/*/node_modules/.bin/**/*'
+    - '/usr/local/lib/node_modules/**/*'
+    - '/usr/local/lib/node_modules/.bin/**/*'
+    - 'node_modules/.cache/**/*'
+    - '/root/.npm'
+
+phases:
+  install:
+    commands:
+      - npm set progress=false && npm set loglevel=silent
+      - npm install npm@latest lerna -g
+      - mkdir out
+
+  pre_build:
+    commands:
+      - npm ci
+
+  build:
+    commands:
+      - lerna run build
+      - lerna run bundle
+      - >
+          lerna exec -- aws cloudformation package \
+            --template-file service.yml \
+            --s3-bucket $S3_BUCKET \
+            --kms-key-id $KMS_KEY \
+            --output-template-file \$LERNA_ROOT_PATH/out/\$LERNA_PACKAGE_NAME.yml
+
+artifacts:
+  type: zip
+  discard-paths: yes
+  files:
+    - out/**/*

@@ -1,0 +1,143 @@
+description: |
+  Returns an array of places matching a particular input query string
+tags:
+  - Locations
+  - Private
+operationId: searchLocation
+security:
+  - UserToken: []
+x-amazon-apigateway-request-validator: params-only
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - name: query
+    in: query
+    description: |
+      The query used to perform the place lookup
+    required: true
+    type: string
+  - name: location
+    in: query
+    pattern: '^(\-?\d+(\.\d+)?),\s*(\-?\d+(\.\d+)?)$'
+    description: |
+      The point around which you wish to retrieve place information.
+      Must be specified as latitude,longitude
+    type: string
+  - name: language
+    in: query
+    pattern: '[a-z]{2}'
+    description: |
+      The two-character language code. The language code, indicating in
+      which language the results should be returned, if possible.
+      Searches are also biased to the selected language; results
+      in the selected language may be given a higher ranking.
+    type: string
+responses:
+  "200":
+    description: 200 response
+    schema:
+      $ref: "../../definitions.yml#/Places"
+    headers:
+      Access-Control-Allow-Headers:
+        type: string
+        description: CORS Header
+      Access-Control-Allow-Origin:
+        type: string
+        description: CORS Header
+      Content-Security-Policy:
+        type: string
+        description: |
+          Content Security Policy (CSP) is an HTTP header that allows site
+          operators fine-grained control over where resources on their
+          site can be loaded from.
+      Strict-Transport-Security:
+        type: string
+        description: |
+          HTTP Strict Transport Security (HSTS) is an HTTP header
+          that notifies user agents to only connect to a given site
+          over HTTPS, even if the scheme chosen was HTTP.
+      X-Content-Type-Options:
+        type: string
+        description: |
+          A header supported by Internet Explorer, Chrome and Firefox 50+
+          that tells it not to load scripts and stylesheets unless
+          the server indicates the correct MIME type.
+      Expect-CT:
+        type: string
+      X-Status:
+        type: string
+        description: |
+          Describes the status of the requested place. If no results are
+          returned, this header may provide an indication as to why.
+        enum:
+          - OK
+          - UNKNOWN_ERROR
+          - ZERO_RESULTS
+          - OVER_QUERY_LIMIT
+          - REQUEST_DENIED
+          - INVALID_REQUEST
+    examples:
+      application/json: |
+        [
+          {
+            "id": "ChIJdd4hrwug2EcRmSrV3Vo6llI",
+            "name": "London, United Kingdom"
+          },
+          {
+            "id": "ChIJC5uNqA7yLogRlWsFmmnXxyg",
+            "name": "London, ON, Canada"
+          },
+          {
+            "id": "ChIJxRO7WVEDdkgRrGM1fCYoHqY",
+            "name": "London Bridge, London, United Kingdom"
+          },
+          {
+            "id": "ChIJH2U9GscEdkgR7sArcZd_NnI",
+            "name": "London Eye, London, United Kingdom"
+          },
+          {
+            "id": "ChIJY5PQNOTdX0gRL_NVxyr6Ib0",
+            "name": "Londonderry, United Kingdom"
+          }
+        ]
+x-amazon-apigateway-integration:
+  type: http
+  httpMethod: GET
+  uri: https://${stageVariables.GoogleMapsApiEndpoint}/maps/api/place/autocomplete/json
+  requestParameters:
+    integration.request.querystring.key: stageVariables.GoogleMapsApiKey
+    integration.request.querystring.input: method.request.querystring.query
+    integration.request.querystring.location: method.request.querystring.location
+    integration.request.querystring.language: method.request.querystring.language
+    # integration.request.querystring.components: "'country:gb'"
+  responses:
+    default:
+      statusCode: "200"
+      responseTemplates:
+        $ref: ./response.yml
+      responseParameters:
+        method.response.header.Access-Control-Allow-Headers: "'*'"
+        method.response.header.Access-Control-Allow-Origin: "'*'"
+        method.response.header.Content-Security-Policy: "'default-src 'none'; frame-ancestors 'none''"
+        method.response.header.Strict-Transport-Security: "'max-age=31536000'"
+        method.response.header.X-Status: integration.response.body.status
+    4\d{2}:
+      statusCode: "400"
+      responseTemplates:
+        application/json: |
+          {
+            "type": "BadRequest",
+            "message": "Your request could not be processed.",
+            "__raw": $input.body
+          }
+    5\d{2}:
+      statusCode: "500"
+      responseTemplates:
+        application/json: |
+          {
+            "type": "InternalServerError",
+            "message": "There was an internal error",
+            "__raw": $input.body
+          }
