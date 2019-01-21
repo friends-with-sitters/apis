@@ -169,6 +169,12 @@ Resources:
                 RoleArn: !ImportValue CloudFormationExecutionRole
                 StackName: !Sub "${AWS::StackName}-service-locations"
                 TemplatePath: BuildOutput::locations.yml
+                ParameterOverrides: !Sub 
+                  - |
+                      {
+                        "UserPoolArn": "${UserPoolArn}"
+                      }
+                  - UserPoolArn: !ImportValue UserPoolArn
 
   PipelineTrigger:
     Type: AWS::CodePipeline::Webhook
