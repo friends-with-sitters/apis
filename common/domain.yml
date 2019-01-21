@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: "Service Domain Mappings"
+
+Parameters:
+
+  BasePath:
+    Type: String
+    Default: ""
+    Description: The base path to associate with this service domain mapping.
+
+  Api:
+    Type: String
+    Description: The API Gateway ID to create DNS Mappings for
+
+  Stage:
+    Type: String
+    Description: |
+      The API Gateway stage to create base path mappings for
+
+Resources:
+
+  ApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      BasePath: !Ref BasePath
+      DomainName: !ImportValue ApiDomainName
+      RestApiId: !Ref Api
+      Stage: !Ref Stage
+
+Outputs:
+
+  Api:
+    Description: The ID of the deployed API
+    Value: !Ref Api
+
+  Stage:
+    Description: The Stage name of the deployed API
+    Value: !Ref Stage
+
+  BasePath:
+    Description: The Base path mapping for the deployed API
+    Value: !Sub "/${BasePath}"

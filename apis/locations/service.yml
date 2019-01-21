@@ -84,6 +84,16 @@ Resources:
           MetricsEnabled: false
           DataTraceEnabled: false
 
+  ApiPath:
+    DependsOn: Api
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ../../common/domain.yml
+      Parameters:
+        BasePath: /locations
+        Api: !Ref Api
+        Stage: !Ref StageName
+
   ApiLogGroup:
     Condition: UseLogging
     Type: AWS::Logs::LogGroup

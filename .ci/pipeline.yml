@@ -168,7 +168,7 @@ Resources:
                 Capabilities: "CAPABILITY_IAM, CAPABILITY_AUTO_EXPAND"
                 RoleArn: !ImportValue CloudFormationExecutionRole
                 StackName: !Sub "${AWS::StackName}-service-locations"
-                TemplatePath: BuildOutput::out/locations.yml
+                TemplatePath: BuildOutput::locations.yml
 
   PipelineTrigger:
     Type: AWS::CodePipeline::Webhook
