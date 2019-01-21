@@ -1,13 +1,11 @@
 {
     "StackSetName": "api",
     "Regions": [
-        "us-east-1",
         "eu-west-2"
     ],
     "OperationPreferences": {
         "RegionOrder": [
-            "eu-west-2",
-            "us-east-1"
+            "eu-west-2"
         ],
         "FailureToleranceCount": 0,
         "MaxConcurrentCount": 1

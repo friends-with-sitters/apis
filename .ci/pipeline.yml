@@ -47,12 +47,16 @@ Resources:
         - Region: !Ref AWS::Region
           ArtifactStore:
             Type: S3
-            EncryptionKey: !ImportValue Key
+            EncryptionKey: 
+              Id: !ImportValue Key
+              Type: KMS
             Location: !ImportValue Artifacts
         - Region: !FindInMap [ RegionNamesToIDs, NorthVirginia, Region ]
           ArtifactStore:
             Type: S3
-            EncryptionKey: !GetAtt NorthVirginiaRegion.Key
+            EncryptionKey: 
+              Id: !GetAtt NorthVirginiaRegion.Key
+              Type: KMS
             Location: !GetAtt NorthVirginiaRegion.Artifacts
       Stages:
         - Name: Source
@@ -76,6 +80,7 @@ Resources:
           Actions:
             - Name: Update
               RunOrder: 1
+              Region: !Ref AWS::Region
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
@@ -108,3 +113,13 @@ Resources:
       TargetPipelineVersion: !GetAtt Pipeline.Version
       TargetAction: GitHub
       RegisterWithThirdParty: true
+
+Outputs:
+
+  # BuildConsoleURL:
+  #   Description: Build URL
+  #   Value: !Sub "https://console.aws.amazon.com/codebuild/home?region=${AWS::Region}#/projects/${Build}/view"
+
+  PipelineConsoleURL:
+    Description: Pipeline URL
+    Value: !Sub "https://console.aws.amazon.com/codepipeline/home?region=${AWS::Region}#/view/${Pipeline}"
