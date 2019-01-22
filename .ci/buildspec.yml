@@ -12,6 +12,7 @@ cache:
 phases:
   install:
     commands:
+      - pip install awscli --upgrade
       - npm set progress=false && npm set loglevel=silent
       - npm install npm@latest lerna -g
       - mkdir out
